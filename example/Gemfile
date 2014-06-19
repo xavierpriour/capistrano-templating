@@ -1,4 +1,4 @@
 source 'https://rubygems.org'
 
 gem "capistrano-secret", require: false
-gem "capistrano-template", require: false
+gem "capistrano-templating", require: false

@@ -1,5 +1,5 @@
 module Capistrano
-  module Template
+  module Templating
     VERSION = "1.0.0"
   end
 end

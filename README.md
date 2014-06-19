@@ -1,4 +1,4 @@
-# Capistrano::Template
+# Capistrano::Templating
 
 A [Capistrano](http://capistranorb.com/) gem to generate files from templates on deployment.
 
@@ -14,8 +14,8 @@ This is especially useful to generate configuration files for various server ele
 
 In a shell:
 ```bash
-gem install capistrano-template
-echo "require 'capistrano/template'" >> Capfile
+gem install capistrano-templating
+echo "require 'capistrano/templating'" >> Capfile
 mkdir -p lib/capistrano/templates
 echo "Deployed to <%= fetch(:stage) %> at <%= Time.new() %>" > lib/capistrano/templates/deploy.html.erb
 ```
@@ -28,7 +28,7 @@ set_template 'www/deploy.html', 'deploy.html.erb';
 
 ## Features
 
-Capistrano::Template advantages:
+Capistrano::Templating advantages:
 * all common code is centralized in the template: no duplication (DRY).
 * file can be generated anywhere (even in multiple places), with any name.
 * any file format can be generated.
@@ -42,6 +42,11 @@ In details:
 * 2-step generation: files are generated in a separate build local folder, then copied into release dir. This allows local view of the generated files for debugging.
 * generated file path and name is specified separately from template file. This lets you put all templates in the same folder, yet dispatch generated files everywhere.
 
+Compared to [capistrano-template](https://github.com/faber-lotto/capistrano-template) gem,
+Capistrano::Templating uses a declarative syntax (`set_template` then automatic generation),
+whereas capistrano-template uses an imperative syntax (ask for render using `template`).
+Pick the one that suits you best!
+
 
 ## Requirements
 
@@ -54,7 +59,7 @@ All dependencies are listed in the .gemspec file so if using `bundler` you just 
 
 Add this line to your application's Gemfile:
 ```
-gem 'capistrano-template'
+gem 'capistrano-templating'
 ```
 
 And then execute:
@@ -64,7 +69,7 @@ bundle
 
 Or install it yourself as:
 ```bash
-gem install capistrano-template
+gem install capistrano-templating
 ```
 
 
@@ -74,7 +79,7 @@ An example application is included in the `example` folder.
 
 Include gem in your `Capfile`:
 ```ruby
-require 'capistrano/template'
+require 'capistrano/templating'
 ```
 
 Create directory where templates will be stored.
@@ -107,7 +112,7 @@ then upload them in the remote release directories.
 
 
 ## Contributing
-1. Fork it ( https://github.com/xavierpriour/capistrano-template/fork )
+1. Fork it ( https://github.com/xavierpriour/capistrano-templating/fork )
 2. Create your feature branch (`git checkout -b my-new-feature`)
 3. Commit your changes (`git commit -am 'Add some feature'`)
 4. Push to the branch (`git push origin my-new-feature`)
