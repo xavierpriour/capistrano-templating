@@ -1,0 +1,67 @@
+def set_template(file, template)
+  unless fetch(:templates)
+    set :templates, {}
+  end
+  fetch(:templates)[file] = template
+end
+
+namespace :template do
+  desc <<-DESC
+    Generate all templates defined in :templates.
+    
+    1. generate in local build dir, with destination names
+    2. upload to remote release dir, merging with non-generated files
+    
+    We used to upload in build dir then symlink, but switched to direct merge to support hosts without symlink support.
+DESC
+  task :generate do
+    templates_list = fetch(:templates, {});
+    
+    templates_list.each do |dst, src|
+      # splits destination in optional relative dir / filename
+      m = /(.*\/)?([^\/]+)$/.match(dst)
+      dst_rel_dir = m[1]
+      dst_file = m[2]
+      #create local build dirs as needed
+      build_dir = "build/#{dst_rel_dir}"
+      %x(mkdir -p #{build_dir})
+      build_filepath = "#{build_dir}#{dst_file}"
+      # get template and render it
+      template_filepath = "lib/capistrano/templates/#{src}"
+      template = File.read(template_filepath)
+      File.open(build_filepath, 'w+') do |f|
+        f.write(ERB.new(template).result(binding))
+      end
+      
+      on roles(:all) do |host|
+        # create remote build dir
+        if dst_rel_dir
+          execute "mkdir -p #{release_path.to_s}/#{dst_rel_dir}"  
+        end
+        upload! build_filepath, release_path.to_s+'/'+dst
+      end
+    end
+  end
+  
+  desc "cleanup everything that was built"
+  task :clear_dir do
+    # clean all build artifacts
+    %x(rm -rf build)
+  end
+  
+  task :remove do
+    templates_list = fetch(:templates, {});
+    templates_list.each do |dst, src|
+      on roles(:all) do |host|
+        # remove link
+        link = "#{release_path.to_s}/#{dst}"
+        if test("[ -f #{link} ]")
+          execute "rm #{link}"
+        end
+        #todo remove any dir that is now empty...  
+      end  
+    end
+  end
+end
+
+after :publishing, 'template:generate'
