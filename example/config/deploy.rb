@@ -1,4 +1,3 @@
-
 set_template 'www/deploy.html', 'deploy.html.erb'
 set_template 'www/php/config.php', 'config.php.erb'
 
@@ -6,8 +5,9 @@ set_template 'www/php/config.php', 'config.php.erb'
 
 set :application, 'capistrano_example_app'
 
-set :repo_url, 'https://github.com/xavierpriour/capistrano-template/'
-set :scm, :svn
+set :scm, :git
+set :repo_url, 'https://github.com/xavierpriour/capistrano-template.git'
+
 
 namespace :deploy do
 

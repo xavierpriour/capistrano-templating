@@ -4,10 +4,10 @@ A [Capistrano](http://capistranorb.com/) gem to generate files from templates on
 
 In a typical application, configuration files contain lots of code common to all stages, and a few differences (like database or mail server and credentials).
 This gem lets you put common code in ERB templates,
-and variable parts using Capistrano variables (`set :var_name, 'value'`)
+and manage variable parts using Capistrano variables (`set :var_name, 'value'`)
 or [capistrano-secret](https://github.com/xavierpriour/capistrano-secret).
 
-This is especially useful to generate configuration files for all application pieces, based on DRY secret files + single template for each configuration file.
+This is especially useful to generate configuration files for various server elements, based on DRY secret files + single template for each configuration file.
 
 
 ## Quick start
@@ -97,15 +97,17 @@ Then in the template directory, create one ERB file per model of file needed.
 As a naming convention, we suggest `name_and_ext_of_target.erb`. For example, `.htaccess.erb` to generate `.htaccess`.
 
 Finally, declare the files to generate in `deploy.rb` or the stage files (like `production.rb`):
-n option is present - for example:
 ```ruby
 set_template 'path/to/result.html', 'template.html.erb'
 ```
+Destination filepaths are relative to application root folder, template paths are relative to template directory.
 
-At the end of deployment, capistrano will automatically generate the files in the local build dir, then upload them in the remote release directories.
+At the end of deployment, capistrano will automatically generate the files in the local build dir (including sub-directory creation),
+then upload them in the remote release directories.
+
 
 ## Contributing
-1. Fork it ( https://github.com/xavierpriour/capistrano-secret/fork )
+1. Fork it ( https://github.com/xavierpriour/capistrano-template/fork )
 2. Create your feature branch (`git checkout -b my-new-feature`)
 3. Commit your changes (`git commit -am 'Add some feature'`)
 4. Push to the branch (`git push origin my-new-feature`)
