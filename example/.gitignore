@@ -1,0 +1,5 @@
+# do not add secrets to repository
+config/secret
+
+# do not add files built from templates to repository
+build

@@ -7,6 +7,8 @@ This gem lets you put common code in ERB templates,
 and variable parts using Capistrano variables (`set :var_name, 'value'`)
 or [capistrano-secret](https://github.com/xavierpriour/capistrano-secret).
 
+This is especially useful to generate configuration files for all application pieces, based on DRY secret files + single template for each configuration file.
+
 
 ## Quick start
 
@@ -18,29 +20,28 @@ mkdir -p lib/capistrano/templates
 echo "Deployed to <%= fetch(:stage) %> at <%= Time.new() %>" > lib/capistrano/templates/deploy.html.erb
 ```
 
-
-
-
-
-
-Then in any Capistrano task:
+Then in `deploy.rb`:
 ```ruby
-puts "I know the secret, it is #{secret('secret.of.life')}";
+set_template 'www/deploy.html', 'deploy.html.erb';
 ```
 
 
 ## Features
 
-Capistrano::Secret advantages:
+Capistrano::Template advantages:
+* all common code is centralized in the template: no duplication (DRY).
+* file can be generated anywhere (even in multiple places), with any name.
+* any file format can be generated.
 
-* All secret information in one unique place: no duplication, easy to keep out of repository.
-* Files contain only secret: no mixing with other, non-sensitive information (like configuration directives).
-* Standard JSON syntax.
-* Each stages has its own set of secrets.
-* Method name makes it explicit to developer this is sensitive information (it's called `secret()`!).
+When combined with [capistrano-secret](https://github.com/xavierpriour/capistrano-secret),
+enables perfect separation of responsibilities:
+* all secret information in easy-to-read JSON, stored in dedicated folder
+* syntax wrapping (for configuration file, deployment pages, or else) concentrated in templates
 
-It really shines when used in conjunction with a templating library like [capistrano-template](https://github.com/xavierpriour/capistrano-template),
-to generate configuration files at deployment. Check it out!
+In details:
+* 2-step generation: files are generated in a separate build local folder, then copied into release dir. This allows local view of the generated files for debugging.
+* generated file path and name is specified separately from template file. This lets you put all templates in the same folder, yet dispatch generated files everywhere.
+
 
 ## Requirements
 
@@ -58,64 +59,50 @@ gem 'capistrano-template'
 
 And then execute:
 ```bash
-$ bundle
+bundle
 ```
 
 Or install it yourself as:
 ```bash
-$ gem install capistrano-template
+gem install capistrano-template
 ```
 
 
 ## Usage
 
+An example application is included in the `example` folder.
+
 Include gem in your `Capfile`:
 ```ruby
-require 'capistrano/secret'
+require 'capistrano/template'
 ```
 
-Create directory where secret information will be stored.
-Default is `config/secret`, to use a different one define `secret_dir` in `deploy.rb`:
+Create directory where templates will be stored.
+Default is `lib/capistrano/template`, to use a different one define `template_src_dir` in `deploy.rb`:
 ```ruby
-set :secret_dir, 'new/secret/dir'
+set :template_src_dir, 'new/template/dir'
 ```
 
-Ensure the directory stays out of repository (for git, add it to `.gitignore`):
-```bash
-echo 'config/secret' >> .gitignore
-```
-
-Then in the directory, create one JSON file per stage (same name as the stage):
-```bash
-touch config/secret/production.json
-```
-
-In the files, define keys as needed, using JSON syntax. For example:
-```JSON
-{
-    "db" : {
-        "user" : "user_db",
-        "password" : "srwhntseithenrsnrsnire",
-        "host" : "sql.yourdomain.com",
-        "name" : "yourDB"
-    },
-    "mail" : {
-        "mode" : "smtp",
-        "user" : "myapp@yourdomain.com",
-        "password" : "rastenhrtrethernhtr",
-        "host" : "ssl://smtp.yourdomain.com",
-    }
-}
-```
-
-Then in your Capistrano tasks you can access any value using `secret('path.to.key')`.
-The call is safe and will just return `nil` if all or part of the path leads nowhere.
-So you can test the return value of any part of the path to see if an option is present - for example:
+Define directory where generated files will be stored.
+Default is `build`, to use a different one define `template_build_dir` in `deploy.rb`:
 ```ruby
-if secret('mail') then
-    # do something with mail info, like send a msg after deploy
-end
+set :template_build_dir, 'new/build/dir'
 ```
+Ensure the build directory stays out of repository (for git, add it to `.gitignore`):
+```bash
+echo 'build' >> .gitignore
+```
+
+Then in the template directory, create one ERB file per model of file needed.
+As a naming convention, we suggest `name_and_ext_of_target.erb`. For example, `.htaccess.erb` to generate `.htaccess`.
+
+Finally, declare the files to generate in `deploy.rb` or the stage files (like `production.rb`):
+n option is present - for example:
+```ruby
+set_template 'path/to/result.html', 'template.html.erb'
+```
+
+At the end of deployment, capistrano will automatically generate the files in the local build dir, then upload them in the remote release directories.
 
 ## Contributing
 1. Fork it ( https://github.com/xavierpriour/capistrano-secret/fork )

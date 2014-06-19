@@ -6,6 +6,15 @@ def set_template(file, template)
 end
 
 namespace :template do
+  def template_dir()
+    return fetch(:template_src_dir) || 'lib/capistrano/templates'
+  end
+  
+  def build_dir()
+    return fetch(:template_build_dir) || 'build'
+  end
+  
+  
   desc <<-DESC
     Generate all templates defined in :templates.
     
@@ -23,11 +32,11 @@ DESC
       dst_rel_dir = m[1]
       dst_file = m[2]
       #create local build dirs as needed
-      build_dir = "build/#{dst_rel_dir}"
+      build_dir = "#{build_dir()}/#{dst_rel_dir}"
       %x(mkdir -p #{build_dir})
       build_filepath = "#{build_dir}#{dst_file}"
       # get template and render it
-      template_filepath = "lib/capistrano/templates/#{src}"
+      template_filepath = "#{template_dir()}/#{src}"
       template = File.read(template_filepath)
       File.open(build_filepath, 'w+') do |f|
         f.write(ERB.new(template).result(binding))
@@ -64,4 +73,4 @@ DESC
   end
 end
 
-after :publishing, 'template:generate'
+after 'deploy:publishing', 'template:generate'
