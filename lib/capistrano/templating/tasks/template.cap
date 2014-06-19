@@ -55,7 +55,7 @@ DESC
   desc "cleanup everything that was built"
   task :clear_dir do
     # clean all build artifacts
-    %x(rm -rf build)
+    %x(rm -rf #{build_dir()})
   end
   
   task :remove do
@@ -73,4 +73,5 @@ DESC
   end
 end
 
+before 'deploy:starting', 'template:clear_dir'
 after 'deploy:publishing', 'template:generate'
